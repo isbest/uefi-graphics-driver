@@ -1,0 +1,7 @@
+/target
+/Cargo.lock
+.idea
+Cargo.lock
+OVMF_CODE.fd
+OVMF_VARS.fd
+esp

@@ -1,0 +1,15 @@
+[package]
+name = "uefi-graphics"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+uefi = "0.20"
+uefi-services = "0.17"
+embedded-graphics-core = "0.3.3"
+
+[dev-dependencies]
+embedded-graphics = "0.7.1"
+log = "0.4"
