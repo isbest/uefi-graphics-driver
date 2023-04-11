@@ -3,13 +3,13 @@
 extern crate alloc;
 
 use alloc::string::String;
-use alloc::vec;
-use alloc::vec::Vec;
-use embedded_graphics_core::pixelcolor::RgbColor;
+use alloc::{vec, vec::Vec};
+
 use embedded_graphics_core::{
     draw_target::DrawTarget,
     geometry::{OriginDimensions, Size},
     pixelcolor::Rgb888,
+    pixelcolor::RgbColor,
     Pixel,
 };
 use uefi::proto::console::gop::{BltOp, BltPixel, BltRegion, GraphicsOutput};

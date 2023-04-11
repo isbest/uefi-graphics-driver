@@ -8,10 +8,9 @@ use embedded_graphics::primitives::{
     Circle, PrimitiveStyle, PrimitiveStyleBuilder, StrokeAlignment, Triangle,
 };
 use embedded_graphics::text::Alignment;
-use embedded_graphics_core::geometry::{Dimensions, Point, Size};
 use embedded_graphics_core::pixelcolor::Rgb888;
+use embedded_graphics_core::prelude::*;
 use embedded_graphics_core::primitives::Rectangle;
-use embedded_graphics_core::Drawable;
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
 use uefi_graphics::{UefiDisplay, UefiDisplayError};
@@ -29,24 +28,26 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     let mut display = UefiDisplay::new(mode.resolution().0, mode.resolution().1);
 
-    loop {
-        test_uefi_driver(&mut display).expect("unsupported error");
-        display.flush(&mut gop).expect("flush error");
-        system_table.boot_services().stall(10_000_000);
-    }
+    // 写入数据
+    test_uefi_driver(&mut display).expect("unsupported error");
+    // 刷新屏幕
+    display.flush(&mut gop).expect("flush error");
+
+    system_table.boot_services().stall(10_000_000);
+    Status::SUCCESS
 }
 
 fn test_uefi_driver(display: &mut UefiDisplay) -> Result<(), UefiDisplayError> {
     // Create styles used by the drawing operations.
-    let thin_stroke = PrimitiveStyle::with_stroke(Rgb888::new(0xAA, 0xBB, 0xCC), 1);
-    let thick_stroke = PrimitiveStyle::with_stroke(Rgb888::new(0xAA, 0xBB, 0xCC), 3);
+    let thin_stroke = PrimitiveStyle::with_stroke(Rgb888::new(255, 0, 0), 1);
+    let thick_stroke = PrimitiveStyle::with_stroke(Rgb888::new(255, 0, 0), 3);
     let border_stroke = PrimitiveStyleBuilder::new()
-        .stroke_color(Rgb888::new(0xAA, 0xBB, 0xCC))
+        .stroke_color(Rgb888::new(255, 0, 0))
         .stroke_width(3)
         .stroke_alignment(StrokeAlignment::Inside)
         .build();
-    let fill = PrimitiveStyle::with_fill(Rgb888::new(0xAA, 0xBB, 0xCC));
-    let character_style = MonoTextStyle::new(&FONT_6X10, Rgb888::new(0xAA, 0xBB, 0xCC));
+    let fill = PrimitiveStyle::with_fill(Rgb888::new(255, 0, 0));
+    let character_style = MonoTextStyle::new(&FONT_6X10, Rgb888::new(255, 0, 0));
 
     let y_offset = 10;
 
