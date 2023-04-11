@@ -2,65 +2,86 @@
 
 extern crate alloc;
 
+use alloc::string::String;
+use alloc::vec;
+use alloc::vec::Vec;
+use embedded_graphics_core::pixelcolor::RgbColor;
 use embedded_graphics_core::{
     draw_target::DrawTarget,
     geometry::{OriginDimensions, Size},
-    pixelcolor::{IntoStorage, Rgb888},
+    pixelcolor::Rgb888,
     Pixel,
 };
-use uefi::proto::console::gop::FrameBuffer;
+use uefi::proto::console::gop::{BltOp, BltPixel, BltRegion, GraphicsOutput};
 
 #[derive(Debug)]
-pub struct Unsupported(());
-impl Unsupported {
-    pub fn new<T>(_: T) -> Self {
-        Self(())
-    }
+pub enum UefiDisplayError {
+    PixelRangeError(String),
+    DisplayError(String),
 }
 
-pub struct UefiDisplay<'a> {
-    /// UEFI FrameBuffer
-    frame_buffer: &'a mut FrameBuffer<'a>,
-    stride: u32,
-    size: (u32, u32),
+pub struct UefiDisplay {
+    /// 宽
+    width: usize,
+    // 长
+    height: usize,
+    // pixels
+    pixels: Vec<BltPixel>,
 }
 
-///  frame_buffer must be uefi framebuffer
-impl<'a> UefiDisplay<'a> {
-    pub fn new(frame_buffer: &'a mut FrameBuffer<'a>, stride: u32, size: (u32, u32)) -> Self {
+impl UefiDisplay {
+    pub fn new(width: usize, height: usize) -> Self {
         Self {
-            frame_buffer,
-            stride,
-            size,
+            width,
+            height,
+            pixels: vec![BltPixel::new(0, 0, 0); width * height],
+        }
+    }
+
+    fn pixel(&mut self, x: usize, y: usize) -> Option<&mut BltPixel> {
+        self.pixels.get_mut(y * self.width + x)
+    }
+
+    pub fn flush(&self, gop: &mut GraphicsOutput) -> Result<(), UefiDisplayError> {
+        match gop.blt(BltOp::BufferToVideo {
+            buffer: &self.pixels,
+            src: BltRegion::Full,
+            dest: (0, 0),
+            dims: (self.width, self.height),
+        }) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(UefiDisplayError::DisplayError("draw pixel error".into())),
         }
     }
 }
 
-impl<'a> OriginDimensions for UefiDisplay<'a> {
+impl OriginDimensions for UefiDisplay {
     fn size(&self) -> Size {
-        let (width, height) = self.size;
-        Size { width, height }
+        Size {
+            width: self.width as u32,
+            height: self.height as u32,
+        }
     }
 }
 
-impl<'a> DrawTarget for UefiDisplay<'a> {
+impl DrawTarget for UefiDisplay {
     type Color = Rgb888;
-    type Error = Unsupported;
+    type Error = UefiDisplayError;
 
     fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
     where
         I: IntoIterator<Item = Pixel<Self::Color>>,
     {
         for Pixel(point, color) in pixels {
-            let bytes = color.into_storage();
-            let stride = self.stride as u64;
-            let (x, y) = (point.x as u64, point.y as u64);
-            let index: usize = (((y * stride) + x) * 4)
-                .try_into()
-                .map_err(Unsupported::new)?;
-
-            // copy from FrameBuffer
-            unsafe { self.frame_buffer.write_value(index, bytes) };
+            // 像素坐标
+            let (x, y) = (point.x, point.y);
+            // 坐标转换为pixels的索引
+            if let Some(pixel) = self.pixel(x as usize, y as usize) {
+                // 写入颜色
+                pixel.red = color.r();
+                pixel.green = color.g();
+                pixel.blue = color.b();
+            }
         }
 
         Ok(())

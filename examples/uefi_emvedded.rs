@@ -14,7 +14,7 @@ use embedded_graphics_core::primitives::Rectangle;
 use embedded_graphics_core::Drawable;
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
-use uefi_graphics::{UefiDisplay, Unsupported};
+use uefi_graphics::{UefiDisplay, UefiDisplayError};
 
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
@@ -27,20 +27,16 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     let mode = gop.current_mode_info();
 
-    let mut fb = gop.frame_buffer();
-    let mut display = UefiDisplay::new(
-        &mut fb,
-        mode.stride() as u32,
-        (mode.resolution().0 as u32, mode.resolution().1 as u32),
-    );
+    let mut display = UefiDisplay::new(mode.resolution().0, mode.resolution().1);
 
     loop {
         test_uefi_driver(&mut display).expect("unsupported error");
+        display.flush(&mut gop).expect("flush error");
         system_table.boot_services().stall(10_000_000);
     }
 }
 
-fn test_uefi_driver(display: &mut UefiDisplay) -> Result<(), Unsupported> {
+fn test_uefi_driver(display: &mut UefiDisplay) -> Result<(), UefiDisplayError> {
     // Create styles used by the drawing operations.
     let thin_stroke = PrimitiveStyle::with_stroke(Rgb888::new(0xAA, 0xBB, 0xCC), 1);
     let thick_stroke = PrimitiveStyle::with_stroke(Rgb888::new(0xAA, 0xBB, 0xCC), 3);
