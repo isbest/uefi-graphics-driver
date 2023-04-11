@@ -14,12 +14,14 @@ use embedded_graphics_core::{
 };
 use uefi::proto::console::gop::{BltOp, BltPixel, BltRegion, GraphicsOutput};
 
+/// display error
 #[derive(Debug)]
 pub enum UefiDisplayError {
     PixelRangeError(String),
     DisplayError(String),
 }
 
+/// Display Buffer
 pub struct UefiDisplay {
     /// 宽
     width: usize,
