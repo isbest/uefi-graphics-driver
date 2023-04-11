@@ -33,3 +33,7 @@ qemu-system-x86_64 -nodefaults \
     -drive if=pflash,format=raw,readonly=on,file=OVMF_VARS.fd \
     -drive format=raw,file=fat:rw:esp
 ```
+
+6. result
+
+![qemu-uefi-graphics](https://raw.githubusercontent.com/GengYage/uefi-graphics-driver/main/examples/qemu-uefi-graphics.png)
