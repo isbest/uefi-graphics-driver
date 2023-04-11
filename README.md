@@ -1,7 +1,3 @@
-### rust learn
-+ assembly
-+ uefi
-
 ### uefi code run
 1. install qemu and edk2-ovmf
 ```shell
