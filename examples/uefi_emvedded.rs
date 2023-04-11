@@ -13,7 +13,7 @@ use embedded_graphics_core::prelude::*;
 use embedded_graphics_core::primitives::Rectangle;
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
-use uefi_graphics::{UefiDisplay, UefiDisplayError};
+use uefi_graphics_driver::{UefiDisplay, UefiDisplayError};
 
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
