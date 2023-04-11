@@ -26,7 +26,8 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     let mode = gop.current_mode_info();
 
-    let mut display = UefiDisplay::new(mode.resolution().0, mode.resolution().1);
+    // 创建屏幕
+    let mut display = UefiDisplay::new(mode.resolution());
 
     // 写入数据
     test_uefi_driver(&mut display).expect("unsupported error");

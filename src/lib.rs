@@ -30,7 +30,7 @@ pub struct UefiDisplay {
 }
 
 impl UefiDisplay {
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new((width, height): (usize, usize)) -> Self {
         Self {
             width,
             height,
